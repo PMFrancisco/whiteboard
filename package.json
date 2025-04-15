@@ -11,6 +11,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@radix-ui/react-slot": "^1.2.0",
     "@trpc/client": "^11.1.0",
     "@trpc/server": "^11.1.0",
     "class-variance-authority": "^0.7.1",
