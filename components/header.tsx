@@ -6,11 +6,8 @@ export function Header() {
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <Link href="/" className="font-bold text-xl">Whiteboard</Link>
         <nav className="hidden md:flex space-x-6">
-          <Link href="/test-trpc" className="hover:text-gray-600 transition-colors">
-            Test
-          </Link>
-          <Link href="/test-trpc/save" className="hover:text-gray-600 transition-colors">
-            Save
+          <Link href="/whiteboard" className="hover:text-gray-600 transition-colors">
+            Whiteboard
           </Link>
         </nav>
       </div>
