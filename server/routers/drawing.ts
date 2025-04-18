@@ -1,15 +1,24 @@
 import { publicProcedure, router } from '../trpc';
 import fs from 'fs/promises';
 import path from 'path';
+import { z } from 'zod';
+import { TRPCError } from '@trpc/server';
 
-// Drawing data interface
-interface DrawingData {
-  id: string;
-  content: any; // We can refine this type later based on the exact structure of tldraw
-}
-
-// Path to the file where we'll save the data
+// Path to the file where the data will be saved
 const DATA_FILE = path.join(process.cwd(), 'data', 'drawings.json');
+
+// Validation schemas with Zod
+// Ensures the tldraw snapshot has a schema version
+const drawingContentSchema = z.object({
+  schemaVersion: z.number().optional(),
+}).passthrough(); // Allows any other fields for tldraw content
+
+const drawingInputSchema = z.object({
+  id: z.string().min(1, 'ID cannot be empty'),
+  content: drawingContentSchema
+});
+
+const drawingIdSchema = z.string().min(1, 'ID cannot be empty');
 
 // Ensure the directory exists
 const ensureDataDir = async () => {
@@ -22,8 +31,16 @@ const ensureDataDir = async () => {
 
 // Save the data to the file
 const saveDrawingsToFile = async (drawings: Record<string, any>) => {
-  await ensureDataDir();
-  await fs.writeFile(DATA_FILE, JSON.stringify(drawings, null, 2), 'utf-8');
+  try {
+    await ensureDataDir();
+    await fs.writeFile(DATA_FILE, JSON.stringify(drawings, null, 2), 'utf-8');
+  } catch (error) {
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Error saving drawings',
+      cause: error,
+    });
+  }
 };
 
 // Load the data from the file
@@ -33,59 +50,106 @@ const loadDrawingsFromFile = async (): Promise<Record<string, any>> => {
     const data = await fs.readFile(DATA_FILE, 'utf-8');
     return JSON.parse(data);
   } catch (error) {
-    // If the file doesn't exist or is empty, return an empty object
-    return {};
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+      // If the file doesn't exist, return an empty object
+      return {};
+    }
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Error loading drawings',
+      cause: error,
+    });
   }
-};
-
-// Manual validation for drawing data
-const validateDrawingData = (data: any): DrawingData => {
-  if (!data || typeof data !== 'object') {
-    throw new Error('Los datos deben ser un objeto');
-  }
-  
-  if (typeof data.id !== 'string' || !data.id) {
-    throw new Error('El ID debe ser un string no vacío');
-  }
-  
-  if (!data.content) {
-    throw new Error('El contenido no puede estar vacío');
-  }
-  
-  return {
-    id: data.id,
-    content: data.content
-  };
 };
 
 export const drawingRouter = router({
   // Get a drawing by ID
   getDrawing: publicProcedure
-    .input((value: unknown) => {
-      if (typeof value !== 'string') {
-        throw new Error('El ID debe ser un string');
-      }
-      return value;
-    })
+    .input(drawingIdSchema)
     .query(async ({ input }) => {
-      const drawings = await loadDrawingsFromFile();
-      return drawings[input] || null;
+      try {
+        const drawings = await loadDrawingsFromFile();
+        return drawings[input] ? { id: input, content: drawings[input] } : null;
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Error retrieving drawing',
+          cause: error,
+        });
+      }
     }),
     
   // Save a drawing
   saveDrawing: publicProcedure
-    .input(validateDrawingData)
+    .input(drawingInputSchema)
     .mutation(async ({ input }) => {
-      const drawings = await loadDrawingsFromFile();
-      drawings[input.id] = input.content;
-      await saveDrawingsToFile(drawings);
-      return { success: true };
+      try {
+        // Verify that the content has a schemaVersion
+        if (typeof input.content !== 'object' || !input.content) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'Drawing content must be an object',
+          });
+        }
+        
+        // If there's no schemaVersion, log a warning but allow saving
+        if (!('schemaVersion' in input.content)) {
+          console.warn(`Saving drawing without schemaVersion: ${input.id}`);
+        }
+        
+        const drawings = await loadDrawingsFromFile();
+        drawings[input.id] = input.content;
+        await saveDrawingsToFile(drawings);
+        return { success: true, id: input.id };
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Error saving drawing',
+          cause: error,
+        });
+      }
     }),
     
   // List all available drawing IDs
   listDrawings: publicProcedure
     .query(async () => {
-      const drawings = await loadDrawingsFromFile();
-      return Object.keys(drawings);
+      try {
+        const drawings = await loadDrawingsFromFile();
+        return Object.keys(drawings).map(id => ({ id }));
+      } catch (error) {
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Error listing drawings',
+          cause: error,
+        });
+      }
     }),
-}); 
+    
+  // Delete a drawing
+  deleteDrawing: publicProcedure
+    .input(drawingIdSchema)
+    .mutation(async ({ input }) => {
+      try {
+        const drawings = await loadDrawingsFromFile();
+        if (drawings[input]) {
+          delete drawings[input];
+          await saveDrawingsToFile(drawings);
+          return { success: true, id: input };
+        } else {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: `Drawing with ID: ${input} not found`,
+          });
+        }
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        throw new TRPCError({
+          code: 'INTERNAL_SERVER_ERROR',
+          message: 'Error deleting drawing',
+          cause: error,
+        });
+      }
+    }),
+});

@@ -1,13 +1,23 @@
 "use client";
 
-import { Tldraw, getSnapshot } from "tldraw";
+import { Tldraw, getSnapshot, loadSnapshot } from "tldraw";
 import "tldraw/tldraw.css";
 import { useEffect, useState } from "react";
-import { trpcClient } from "@/utils/trpc";
+import { trpc } from "@/utils/trpc";
 
+// Main component that directly uses tRPC hooks
 export default function WhiteboardPage() {
   const [editor, setEditor] = useState<any>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // Use tRPC hooks for queries and mutations
+  const saveDrawingMutation = trpc.drawing.saveDrawing.useMutation();
+  
+  const getDrawingQuery = trpc.drawing.getDrawing.useQuery("whiteboard", {
+    enabled: !!editor,
+    refetchOnWindowFocus: false,
+  });
 
   // Function to save the current state
   const saveState = async () => {
@@ -15,6 +25,7 @@ export default function WhiteboardPage() {
 
     try {
       setIsSaving(true);
+      setErrorMessage(null);
 
       // Get the snapshot directly
       const snapshot = getSnapshot(editor.store);
@@ -22,73 +33,54 @@ export default function WhiteboardPage() {
       console.log("Saving snapshot:", {
         hasSchemaVersion: 'schemaVersion' in snapshot,
         snapshotKeys: Object.keys(snapshot),
-        fullSnapshot: snapshot
       });
 
       // Save the state using tRPC
-      await trpcClient.drawing.saveDrawing.mutate({
+      await saveDrawingMutation.mutateAsync({
         id: "whiteboard",
-        content: snapshot,
+        content: snapshot as any, // Using 'as any' to avoid typing issues with the snapshot
       });
 
       console.log("Whiteboard state saved successfully");
     } catch (error) {
-      console.error("Error saving whiteboard state:", error);
+      console.error("Error in saveState:", error);
+      setErrorMessage("Error saving the drawing");
     } finally {
       setIsSaving(false);
     }
   };
 
-  // Load the saved state when the component mounts
+  // Load the saved state when editor is ready
   useEffect(() => {
-    const loadSavedState = async () => {
-      if (!editor) return;
+    if (!editor || !getDrawingQuery.data) return;
+
+    try {
+      const savedDrawing = getDrawingQuery.data;
+      
+      if (!savedDrawing?.content) {
+        console.warn("No content found in saved drawing");
+        return;
+      }
+
+      // Verify that the content has the necessary data
+      if (!savedDrawing.content || typeof savedDrawing.content !== 'object') {
+        console.warn("Invalid content format in saved drawing");
+        return;
+      }
 
       try {
-        const savedDrawing = await trpcClient.drawing.getDrawing.query(
-          "whiteboard"
-        );
-
-        console.log("Received savedDrawing:", {
-          hasContent: !!savedDrawing?.content,
-          contentKeys: savedDrawing?.content ? Object.keys(savedDrawing.content) : [],
-          fullContent: savedDrawing?.content
-        });
-
-        if (savedDrawing?.content) {
-          try {
-            console.log("Before loadSnapshot:", {
-              hasSchemaVersion: 'schemaVersion' in savedDrawing.content,
-              schemaVersion: savedDrawing.content.schemaVersion,
-              currentSchemaVersion: editor.store.schema.serialize().schemaVersion
-            });
-
-            // Apply the saved state to the editor
-            editor.store.loadSnapshot(savedDrawing.content);
-            console.log("Loaded saved state successfully");
-          } catch (loadError) {
-            console.error("Error loading snapshot:", {
-              error: loadError,
-              savedContent: savedDrawing.content
-            });
-          }
-        } else {
-          console.warn("No content found in saved drawing");
-        }
-      } catch (error) {
-        console.error("Error loading saved state:", error);
+        // Use the imported loadSnapshot function instead of editor.store.loadSnapshot
+        loadSnapshot(editor.store, savedDrawing.content);
+        console.log("Loaded snapshot using loadSnapshot from tldraw package");
+      } catch (loadError) {
+        console.error("Error loading snapshot:", loadError);
+        setErrorMessage("Error loading saved drawing");
       }
-    };
-
-    if (editor) {
-      console.log("Editor mounted:", {
-        hasStore: !!editor.store,
-        hasSchema: !!editor.store?.schema,
-        schemaVersion: editor.store?.schema?.serialize()?.schemaVersion
-      });
-      loadSavedState();
+    } catch (error) {
+      console.error("Error in useEffect:", error);
+      setErrorMessage("Error processing saved drawing");
     }
-  }, [editor]);
+  }, [editor, getDrawingQuery.data]);
 
   // Set up a listener for changes to the editor
   useEffect(() => {
@@ -114,17 +106,23 @@ export default function WhiteboardPage() {
       <Tldraw
         persistenceKey="whiteboard"
         onMount={(editor) => {
-          console.log("Tldraw onMount:", {
-            hasStore: !!editor.store,
-            hasSchema: !!editor.store?.schema,
-            schemaVersion: editor.store?.schema?.serialize()?.schemaVersion
-          });
           setEditor(editor);
         }}
       />
       {isSaving && (
         <div className="absolute top-2 right-2 bg-white/80 px-3 py-1 rounded-md text-sm">
           Saving...
+        </div>
+      )}
+      {errorMessage && (
+        <div className="absolute top-2 left-2 bg-red-100 text-red-700 px-3 py-1 rounded-md text-sm">
+          {errorMessage}
+          <button 
+            className="ml-2 text-red-900 font-bold"
+            onClick={() => setErrorMessage(null)}
+          >
+            &times;
+          </button>
         </div>
       )}
     </div>
