@@ -2,9 +2,9 @@
 
 import { createTRPCNext } from '@trpc/next';
 import { httpBatchLink } from '@trpc/client';
-import { AppRouter, appRouter } from '@/server/routers/_app';
+import { AppRouter } from '@/server/routers/_app';
 import superjson from 'superjson';
-
+import { ssrPrepass } from '@trpc/next/ssrPrepass'
 
 /**
  * tRPC client configured with createTRPCNext for optimal integration with Next.js
@@ -20,7 +20,8 @@ export const trpc = createTRPCNext<AppRouter>({
       ],
     };
   },
-  ssr: false,
+  ssr: true,
+  ssrPrepass,
   transformer: superjson,
 });
 

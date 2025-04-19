@@ -1,19 +1,10 @@
-"use client";
-
-import { trpc } from "@/utils/trpc";
 import { WhiteboardCard } from "@/components/cards/whiteboardCard";
 import { NewWhiteboardButtonVariant } from "@/components/buttons/newWhiteboardButton";
+import { getDrawings } from "@/server/actions";
 
-export function WhiteboardList() {
-  const { data: whiteboards, isLoading, error } = trpc.drawing.listDrawings.useQuery();
-
-  if (isLoading) {
-    return <div className="text-center py-8">Loading whiteboards...</div>;
-  }
-
-  if (error) {
-    return <div className="text-center py-8 text-red-500">Error loading whiteboards: {error.message}</div>;
-  }
+export async function WhiteboardList() {
+  // Obtain the whiteboards from the database
+  const whiteboards = await getDrawings();
 
   if (!whiteboards || whiteboards.length === 0) {
     return (

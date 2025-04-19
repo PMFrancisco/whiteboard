@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Tldraw, getSnapshot, loadSnapshot, Editor } from "tldraw";
+import { Tldraw, getSnapshot, loadSnapshot, Editor, TLStoreSnapshot } from "tldraw";
 import "tldraw/tldraw.css";
 import { useEffect, useState, useCallback } from "react";
 import { trpc } from "@/utils/trpc";
@@ -81,7 +81,11 @@ export default function DynamicWhiteboardPage() {
 
       try {
         // Use the imported loadSnapshot function instead of editor.store.loadSnapshot
-        loadSnapshot(editor.store, savedDrawing.content);
+        const documentContent = savedDrawing.content.document as unknown as TLStoreSnapshot;
+        if (!documentContent || typeof documentContent !== 'object') {
+          throw new Error('Invalid document content');
+        }
+        loadSnapshot(editor.store, documentContent);
         console.log("Loaded snapshot using loadSnapshot from tldraw package");
       } catch (loadError) {
         console.error("Error loading snapshot:", loadError);

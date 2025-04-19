@@ -1,4 +1,4 @@
-import { createNewWhiteboard } from "@/app/actions";
+import { createNewWhiteboard } from "@/server/actions";
 import { Button } from "../ui/button";
 
 export function NewWhiteboardButton() {
