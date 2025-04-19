@@ -1,15 +1,16 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Tldraw, getSnapshot, loadSnapshot } from "tldraw";
+import { Tldraw, getSnapshot, loadSnapshot, Editor } from "tldraw";
 import "tldraw/tldraw.css";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { trpc } from "@/utils/trpc";
 import { useParams } from "next/navigation";
 
 export default function DynamicWhiteboardPage() {
   const params = useParams();
   const uuid = params.uuid as string;
-  const [editor, setEditor] = useState<any>(null);
+  const [editor, setEditor] = useState<Editor | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -22,7 +23,7 @@ export default function DynamicWhiteboardPage() {
   });
 
   // Function to save the current state
-  const saveState = async () => {
+  const saveState = useCallback(async () => {
     if (!editor || !uuid) return;
 
     try {
@@ -58,7 +59,7 @@ export default function DynamicWhiteboardPage() {
     } finally {
       setIsSaving(false);
     }
-  };
+  }, [editor, uuid, saveDrawingMutation, setIsSaving, setErrorMessage]);
 
   // Load the saved state when editor is ready
   useEffect(() => {
@@ -109,7 +110,7 @@ export default function DynamicWhiteboardPage() {
     return () => {
       unlisten();
     };
-  }, [editor, uuid]);
+  }, [editor, uuid, saveState]);
 
   return (
     <div className="relative w-full h-full">

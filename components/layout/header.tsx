@@ -1,10 +1,6 @@
 import Link from 'next/link';
-import { Button } from '../ui/button';
-import { generateUUID } from '@/utils/uuidGenerator';
 
 export function Header() {
-  // Generate the UUID at render time
-  const newWhiteboardUUID = generateUUID();
 
   return (
     <header className="w-full py-4 px-6 border-b">
