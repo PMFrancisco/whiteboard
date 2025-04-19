@@ -14,9 +14,10 @@ export default function DynamicWhiteboardPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Use tRPC hooks for queries and mutations
+  // Initialize tRPC mutation for saving drawing state
   const saveDrawingMutation = trpc.drawing.saveDrawing.useMutation();
   
+  // Query to fetch existing drawing data, only enabled when editor and uuid are available
   const getDrawingQuery = trpc.drawing.getDrawing.useQuery(uuid, {
     enabled: !!editor && !!uuid,
     refetchOnWindowFocus: false,
@@ -30,12 +31,11 @@ export default function DynamicWhiteboardPage() {
       setIsSaving(true);
       setErrorMessage(null);
 
-      // Get the snapshot directly
+      // Capture the current editor state as a snapshot
       const snapshot = getSnapshot(editor.store);
       
-      // Add schemaVersion if it doesn't exist
+      // Ensure schema version is present for compatibility
       if (!('schemaVersion' in snapshot)) {
-        // Use the TLDraw default schema version (1) or adjust as needed
         (snapshot as any).schemaVersion = 1;
       }
       
@@ -46,7 +46,7 @@ export default function DynamicWhiteboardPage() {
         snapshotKeys: Object.keys(snapshot),
       });
 
-      // Save the state using tRPC
+      // Persist the state using tRPC mutation
       await saveDrawingMutation.mutateAsync({
         id: uuid,
         content: snapshot as any,
@@ -73,14 +73,14 @@ export default function DynamicWhiteboardPage() {
         return;
       }
 
-      // Verify that the content has the necessary data
+      // Validate the content structure
       if (!savedDrawing.content || typeof savedDrawing.content !== 'object') {
         console.warn("Invalid content format in saved drawing");
         return;
       }
 
       try {
-        // Use the imported loadSnapshot function instead of editor.store.loadSnapshot
+        // Load the document content into the editor
         const documentContent = savedDrawing.content.document as unknown as TLStoreSnapshot;
         if (!documentContent || typeof documentContent !== 'object') {
           throw new Error('Invalid document content');
@@ -104,7 +104,6 @@ export default function DynamicWhiteboardPage() {
     // Listen for changes to the document
     const unlisten = editor.store.listen(
       () => {
-        // Save state whenever there's a change
         saveState();
       },
       { scope: "document", source: "user" }
