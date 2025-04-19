@@ -6,6 +6,7 @@ import "tldraw/tldraw.css";
 import { useEffect, useState, useCallback } from "react";
 import { trpc } from "@/utils/trpc";
 import { useParams } from "next/navigation";
+import CustomToolbar from "@/components/tldraw/toolbar";
 
 export default function DynamicWhiteboardPage() {
   const params = useParams();
@@ -17,7 +18,7 @@ export default function DynamicWhiteboardPage() {
   // Initialize tRPC mutation for saving drawing state
   const saveDrawingMutation = trpc.drawing.saveDrawing.useMutation();
   
-  // Query to fetch existing drawing data, only enabled when editor and uuid are available
+  // Query to fetch existing drawing data
   const getDrawingQuery = trpc.drawing.getDrawing.useQuery(uuid, {
     enabled: !!editor && !!uuid,
     refetchOnWindowFocus: false,
@@ -30,23 +31,12 @@ export default function DynamicWhiteboardPage() {
     try {
       setIsSaving(true);
       setErrorMessage(null);
-
-      // Capture the current editor state as a snapshot
       const snapshot = getSnapshot(editor.store);
       
-      // Ensure schema version is present for compatibility
       if (!('schemaVersion' in snapshot)) {
         (snapshot as any).schemaVersion = 1;
       }
       
-      console.log("Saving snapshot:", {
-        id: uuid,
-        hasSchemaVersion: 'schemaVersion' in snapshot,
-        schemaVersion: (snapshot as any).schemaVersion,
-        snapshotKeys: Object.keys(snapshot),
-      });
-
-      // Persist the state using tRPC mutation
       await saveDrawingMutation.mutateAsync({
         id: uuid,
         content: snapshot as any,
@@ -73,20 +63,17 @@ export default function DynamicWhiteboardPage() {
         return;
       }
 
-      // Validate the content structure
       if (!savedDrawing.content || typeof savedDrawing.content !== 'object') {
         console.warn("Invalid content format in saved drawing");
         return;
       }
 
       try {
-        // Load the document content into the editor
         const documentContent = savedDrawing.content.document as unknown as TLStoreSnapshot;
         if (!documentContent || typeof documentContent !== 'object') {
           throw new Error('Invalid document content');
         }
         loadSnapshot(editor.store, documentContent);
-        console.log("Loaded snapshot using loadSnapshot from tldraw package");
       } catch (loadError) {
         console.error("Error loading snapshot:", loadError);
         setErrorMessage("Error loading saved drawing");
@@ -101,7 +88,6 @@ export default function DynamicWhiteboardPage() {
   useEffect(() => {
     if (!editor) return;
 
-    // Listen for changes to the document
     const unlisten = editor.store.listen(
       () => {
         saveState();
@@ -109,7 +95,6 @@ export default function DynamicWhiteboardPage() {
       { scope: "document", source: "user" }
     );
 
-    // Clean up the listener when the component unmounts
     return () => {
       unlisten();
     };
@@ -121,6 +106,9 @@ export default function DynamicWhiteboardPage() {
         persistenceKey={`whiteboard-${uuid}`}
         onMount={(editor) => {
           setEditor(editor);
+        }}
+        components={{
+          Toolbar: CustomToolbar,
         }}
       />
       {isSaving && (
