@@ -10,7 +10,7 @@ const DATA_FILE = path.join(process.cwd(), 'data', 'drawings.json');
 // Validation schemas with Zod
 // Ensures the tldraw snapshot has a schema version
 const drawingContentSchema = z.object({
-  schemaVersion: z.number().optional(),
+  schemaVersion: z.number({ required_error: 'schemaVersion is required' }),
 }).passthrough(); // Allows any other fields for tldraw content
 
 const drawingInputSchema = z.object({
@@ -92,9 +92,13 @@ export const drawingRouter = router({
           });
         }
         
-        // If there's no schemaVersion, log a warning but allow saving
+        // schemaVersion is required by the schema validation
+        // this check is not needed, but we'll keep it for extra safety
         if (!('schemaVersion' in input.content)) {
-          console.warn(`Saving drawing without schemaVersion: ${input.id}`);
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: 'schemaVersion is required in drawing content',
+          });
         }
         
         const drawings = await loadDrawingsFromFile();
