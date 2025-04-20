@@ -42,7 +42,7 @@ export function DeleteWhiteboardButton({ id }: DeleteWhiteboardButtonProps) {
         <Button
           variant="destructive"
           size="sm"
-          className="h-8 px-2"
+          className="h-8 px-2 cursor-pointer"
           aria-label="Delete whiteboard"
         >
           <Trash2 className="h-4 w-4" />

@@ -1,5 +1,5 @@
 import { WhiteboardCard } from "@/components/cards/whiteboardCard";
-import { NewWhiteboardButtonVariant } from "@/components/buttons/newWhiteboardButton";
+import { NewWhiteboardButton } from "@/components/buttons/newWhiteboardButton";
 import { getDrawings } from "@/server/actions";
 
 export async function WhiteboardList() {
@@ -10,9 +10,9 @@ export async function WhiteboardList() {
     return (
       <div className="text-center py-8 bg-gray-50 rounded-lg">
         <p className="text-gray-500 mb-4">No whiteboards found</p>
-        <NewWhiteboardButtonVariant>
+        <NewWhiteboardButton>
           Create Your First Whiteboard
-        </NewWhiteboardButtonVariant>
+        </NewWhiteboardButton>
       </div>
     );
   }
