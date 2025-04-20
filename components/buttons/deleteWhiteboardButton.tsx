@@ -31,7 +31,7 @@ export function DeleteWhiteboardButton({ id }: DeleteWhiteboardButtonProps) {
       onClick={handleDelete}
       disabled={isDeleting}
       variant="destructive"
-      className="absolute top-2 right-2 hover:text-red-700 p-1 rounded-lg hover:bg-red-50"
+      className="hover:text-red-700 p-1 rounded-lg hover:bg-red-50"
       aria-label="Delete whiteboard"
     >
       Delete

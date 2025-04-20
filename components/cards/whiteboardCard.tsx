@@ -1,18 +1,34 @@
 import Link from "next/link";
 import { DeleteWhiteboardButton } from "../buttons/deleteWhiteboardButton";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, CardAction } from "@/components/ui/card";
 
 interface WhiteboardCardProps {
   id: string;
 }
 
 export function WhiteboardCard({ id }: WhiteboardCardProps) {
+  
   return (
-    <div className="relative block p-6 rounded-lg border hover:border-blue-400 transition-colors">
-      <Link href={`/whiteboard/${id}`} className="block">
-        <div className="font-medium mb-2">Whiteboard</div>
-        <div className="text-gray-500 text-sm truncate">{id}</div>
-      </Link>
-      <DeleteWhiteboardButton id={id} />
-    </div>
+    <Card className="hover:border-blue-400 transition-colors">
+      <CardHeader>
+        <CardTitle>Whiteboard</CardTitle>
+        <CardDescription className="truncate">
+          {id}
+        </CardDescription>
+        <CardAction>
+          <DeleteWhiteboardButton id={id} />
+        </CardAction>
+      </CardHeader>
+      <CardContent>
+        <div className="w-full h-32 bg-gray-50 rounded-md flex items-center justify-center text-gray-400">
+          Preview
+        </div>
+      </CardContent>
+      <CardFooter className="text-xs text-muted-foreground">
+        <Link href={`/whiteboard/${id}`} className="w-full text-blue-600 hover:underline">
+          Open Whiteboard
+        </Link>
+      </CardFooter>
+    </Card>
   );
 } 
