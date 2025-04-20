@@ -4,6 +4,7 @@ import { createNewWhiteboard } from "@/server/actions";
 import { Button } from "../ui/button";
 import { ReactNode } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 interface NewWhiteboardButtonProps {
   children?: ReactNode;
@@ -16,10 +17,18 @@ export function NewWhiteboardButton({ children }: NewWhiteboardButtonProps) {
     try {
       const result = await createNewWhiteboard();
       if (result.success) {
-        router.push(`/whiteboard/${result.id}`);
+        toast.success("Board created successfully", {
+          description: "Redirecting to the new board...",
+        });
+        setTimeout(() => {
+          router.push(`/whiteboard/${result.id}`);
+        }, 1000);
       }
     } catch (error) {
       console.error("Error creating whiteboard:", error);
+      toast.error("Error creating whiteboard", {
+        description: "Try again later",
+      });
     }
   };
 
