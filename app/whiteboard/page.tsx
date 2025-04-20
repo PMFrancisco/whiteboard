@@ -1,7 +1,8 @@
-
 import { NewWhiteboardButton } from "@/components/buttons/newWhiteboardButton";
 import ErrorMessage from "@/components/errorMessage";
 import { WhiteboardList } from "@/components/lists/whiteboardList";
+import { WhiteboardSkeletonList } from "@/components/skeletons/whiteboardSkeleton";
+import { Suspense } from "react";
 
 export default function WhiteboardListPage() {
   try {
@@ -11,7 +12,9 @@ export default function WhiteboardListPage() {
           <h1 className="text-3xl font-bold">Your Whiteboards</h1>
           <NewWhiteboardButton />
         </div>
-        <WhiteboardList />
+        <Suspense fallback={<WhiteboardSkeletonList />}>
+          <WhiteboardList />
+        </Suspense>
       </div>
     );
   } catch (error: unknown) {
