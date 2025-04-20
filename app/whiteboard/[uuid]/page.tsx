@@ -84,6 +84,13 @@ export default function DynamicWhiteboardPage() {
     }
   }, [editor, getDrawingQuery.data]);
 
+  // Save the initial state when the editor is mounted
+  useEffect(() => {
+    if (!editor) return;
+    
+    saveState();
+  }, [editor]); // Only depends on the editor, not saveState
+
   // Set up a listener for changes to the editor
   useEffect(() => {
     if (!editor) return;
