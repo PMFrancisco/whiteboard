@@ -6,7 +6,7 @@ import "tldraw/tldraw.css";
 import { useEffect, useState, useCallback } from "react";
 import { trpc } from "@/utils/trpc";
 import { useParams } from "next/navigation";
-import CustomToolbar from "@/components/tldraw/toolbar";
+import CustomUi from "@/components/tldraw/customUi";
 
 export default function DynamicWhiteboardPage() {
   const params = useParams();
@@ -126,10 +126,10 @@ export default function DynamicWhiteboardPage() {
             onMount={(editor) => {
               setEditor(editor);
             }}
-            components={{
-              Toolbar: CustomToolbar,
-            }}
-          />
+            hideUi
+          >
+            <CustomUi />
+          </Tldraw>
           {isSaving && (
             <div className="absolute top-2 right-2 bg-white/80 px-3 py-1 rounded-md text-sm">
               Saving...
