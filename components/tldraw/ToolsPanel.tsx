@@ -11,7 +11,7 @@ import {
   ArrowRight, 
   Image 
 } from "lucide-react";
-import { useEditor, useValue } from "tldraw";
+import { useEditor, useValue, exportAs } from "tldraw";
 
 interface ToolsPanelProps {
   openFileDialog: () => void;
@@ -48,22 +48,29 @@ export default function ToolsPanel({ openFileDialog }: ToolsPanelProps) {
   };
 
   // Handle export
-  const handleExport = () => {
+  const handleExport = async () => {
     if (!editor) return;
     
     try {
-      // Create an anchor element to download the image
-      const link = document.createElement('a');
-      link.download = 'whiteboard-export.png';
+      const shapes = editor.getCurrentPageShapes();
+      const shapeIds = shapes.map(shape => shape.id);
+      const svgResult = await editor.getSvgElement(shapeIds);
       
-      // If we were able to get the canvas and its data URL
-      const canvas = document.querySelector('canvas');
-      if (canvas) {
-        link.href = canvas.toDataURL('image/png');
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+      if (!svgResult) {
+        throw new Error('Failed to generate SVG');
       }
+      
+      const svgString = new XMLSerializer().serializeToString(svgResult.svg);
+      const blob = new Blob([svgString], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.download = 'whiteboard-export.svg';
+      link.href = url;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error exporting image:", error);
     }
@@ -92,7 +99,7 @@ export default function ToolsPanel({ openFileDialog }: ToolsPanelProps) {
       <Separator className="my-2" />
       <div className="space-y-2">
         <Button onClick={handleExport} className="w-full">
-          Export as PNG
+          Export as SVG
         </Button>
         <div className="flex space-x-2">
           <Button 
