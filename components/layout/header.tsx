@@ -41,9 +41,9 @@ ListItem.displayName = "ListItem"
 
 export function Header() {
   return (
-    <header className="w-full py-4 px-6 border-b">
+    <header className="w-full py-4 px-6 bg-white/70 backdrop-blur-sm border-b border-gray-200/50">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <Link href="/" className="font-bold text-xl">Whiteboard</Link>
+        <Link href="/" className="font-bold text-xl text-gray-800">Whiteboard</Link>
         
         <NavigationMenu>
           <NavigationMenuList>

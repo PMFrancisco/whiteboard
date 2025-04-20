@@ -29,12 +29,13 @@ export default function Error({
         >
           Try again
         </Button>
+        <Button asChild>
         <Link 
           href="/" 
-          className="px-6 py-3 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
         >
           Back to home
         </Link>
+        </Button>
       </div>
     </div>
   );
