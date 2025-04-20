@@ -3,6 +3,18 @@
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { deleteWhiteboard } from "@/server/actions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Trash2 } from "lucide-react";
 
 interface DeleteWhiteboardButtonProps {
   id: string;
@@ -10,31 +22,51 @@ interface DeleteWhiteboardButtonProps {
 
 export function DeleteWhiteboardButton({ id }: DeleteWhiteboardButtonProps) {
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigation
-    if (window.confirm("Are you sure you want to delete this whiteboard?")) {
-      setIsDeleting(true);
-      try {
-        await deleteWhiteboard(id);
-        // Page will reload automatically after deletion
-        window.location.reload();
-      } catch (error) {
-        console.error("Error deleting whiteboard:", error);
-        setIsDeleting(false);
-      }
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteWhiteboard(id);
+      // Page will reload automatically after deletion
+      window.location.reload();
+    } catch (error) {
+      console.error("Error deleting whiteboard:", error);
+      setIsDeleting(false);
     }
   };
 
   return (
-    <Button
-      onClick={handleDelete}
-      disabled={isDeleting}
-      variant="destructive"
-      className="hover:text-red-700 p-1 rounded-lg hover:bg-red-50"
-      aria-label="Delete whiteboard"
-    >
-      Delete
-    </Button>
+    <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
+      <AlertDialogTrigger asChild>
+        <Button
+          variant="destructive"
+          size="sm"
+          className="h-8 px-2"
+          aria-label="Delete whiteboard"
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete the
+            whiteboard and remove all of its data from our servers.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="bg-red-600 hover:bg-red-700"
+          >
+            {isDeleting ? "Deleting..." : "Delete"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 } 
