@@ -11,7 +11,7 @@ import {
   ArrowRight, 
   Image 
 } from "lucide-react";
-import { useEditor, useValue, exportAs } from "tldraw";
+import { useEditor, useValue } from "tldraw";
 
 interface ToolsPanelProps {
   openFileDialog: () => void;
