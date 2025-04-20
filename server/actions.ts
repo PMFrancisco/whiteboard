@@ -42,6 +42,22 @@ export async function deleteWhiteboard(id: string) {
  * to a new whiteboard with a generated UUID
  */
 export async function createNewWhiteboard() {
+  try {
     const uuid = generateUUID();
-    redirect(`/whiteboard/${uuid}`);
-  } 
+    
+    // Crear el whiteboard en la base de datos
+    await prisma.drawing.create({
+      data: {
+        id: uuid,
+        schemaVersion: 1,
+        document: {},
+        session: {}
+      }
+    });
+
+    return { success: true, id: uuid };
+  } catch (error) {
+    console.error('Error creating new whiteboard:', error);
+    throw new Error('Failed to create new whiteboard');
+  }
+} 

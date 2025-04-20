@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { DeleteWhiteboardButton } from "../buttons/deleteWhiteboardButton";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, CardAction } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardFooter, CardAction } from "@/components/ui/card";
 
 interface WhiteboardCardProps {
   id: string;
@@ -19,11 +19,6 @@ export function WhiteboardCard({ id }: WhiteboardCardProps) {
           <DeleteWhiteboardButton id={id} />
         </CardAction>
       </CardHeader>
-      <CardContent>
-        <div className="w-full h-32 bg-gray-50 rounded-md flex items-center justify-center text-gray-400">
-          Preview
-        </div>
-      </CardContent>
       <CardFooter className="text-xs text-muted-foreground">
         <Link href={`/whiteboard/${id}`} className="w-full text-blue-600 hover:underline">
           Open Whiteboard

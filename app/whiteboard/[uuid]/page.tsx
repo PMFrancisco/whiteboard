@@ -14,15 +14,24 @@ export default function DynamicWhiteboardPage() {
   const [editor, setEditor] = useState<Editor | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Initialize tRPC mutation for saving drawing state
   const saveDrawingMutation = trpc.drawing.saveDrawing.useMutation();
   
   // Query to fetch existing drawing data
   const getDrawingQuery = trpc.drawing.getDrawing.useQuery(uuid, {
-    enabled: !!editor && !!uuid,
+    enabled: !!uuid,
     refetchOnWindowFocus: false,
   });
+
+  // Verificar si el whiteboard existe
+  useEffect(() => {
+    if (getDrawingQuery.isError || (getDrawingQuery.data === null && !getDrawingQuery.isLoading)) {
+      setErrorMessage("Este whiteboard no existe o no tienes acceso a él");
+    }
+    setIsLoading(false);
+  }, [getDrawingQuery.isError, getDrawingQuery.data, getDrawingQuery.isLoading]);
 
   // Function to save the current state
   const saveState = useCallback(async () => {
@@ -84,13 +93,6 @@ export default function DynamicWhiteboardPage() {
     }
   }, [editor, getDrawingQuery.data]);
 
-  // Save the initial state when the editor is mounted
-  useEffect(() => {
-    if (!editor) return;
-    
-    saveState();
-  }, [editor]); // Only depends on the editor, not saveState
-
   // Set up a listener for changes to the editor
   useEffect(() => {
     if (!editor) return;
@@ -109,30 +111,42 @@ export default function DynamicWhiteboardPage() {
 
   return (
     <div className="relative w-full h-full">
-      <Tldraw
-        persistenceKey={`whiteboard-${uuid}`}
-        onMount={(editor) => {
-          setEditor(editor);
-        }}
-        components={{
-          Toolbar: CustomToolbar,
-        }}
-      />
-      {isSaving && (
-        <div className="absolute top-2 right-2 bg-white/80 px-3 py-1 rounded-md text-sm">
-          Saving...
+      {isLoading ? (
+        <div className="flex items-center justify-center h-full">
+          <div className="text-lg">Cargando...</div>
         </div>
-      )}
-      {errorMessage && (
-        <div className="absolute top-2 left-2 bg-red-100 text-red-700 px-3 py-1 rounded-md text-sm">
-          {errorMessage}
-          <button 
-            className="ml-2 text-red-900 font-bold"
-            onClick={() => setErrorMessage(null)}
-          >
-            &times;
-          </button>
+      ) : errorMessage ? (
+        <div className="flex items-center justify-center h-full">
+          <div className="text-lg text-red-600">{errorMessage}</div>
         </div>
+      ) : (
+        <>
+          <Tldraw
+            persistenceKey={`whiteboard-${uuid}`}
+            onMount={(editor) => {
+              setEditor(editor);
+            }}
+            components={{
+              Toolbar: CustomToolbar,
+            }}
+          />
+          {isSaving && (
+            <div className="absolute top-2 right-2 bg-white/80 px-3 py-1 rounded-md text-sm">
+              Saving...
+            </div>
+          )}
+          {errorMessage && (
+            <div className="absolute top-2 left-2 bg-red-100 text-red-700 px-3 py-1 rounded-md text-sm">
+              {errorMessage}
+              <button 
+                className="ml-2 text-red-900 font-bold"
+                onClick={() => setErrorMessage(null)}
+              >
+                &times;
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
