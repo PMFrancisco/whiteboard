@@ -28,7 +28,7 @@ export default function DynamicWhiteboardPage() {
   // Verificar si el whiteboard existe
   useEffect(() => {
     if (getDrawingQuery.isError || (getDrawingQuery.data === null && !getDrawingQuery.isLoading)) {
-      setErrorMessage("Este whiteboard no existe o no tienes acceso a él");
+      setErrorMessage("This Whiteboard doesn't exist or you don't have access to it");
     }
     setIsLoading(false);
   }, [getDrawingQuery.isError, getDrawingQuery.data, getDrawingQuery.isLoading]);
