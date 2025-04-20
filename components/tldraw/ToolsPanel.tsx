@@ -37,7 +37,7 @@ export default function ToolsPanel({ openFileDialog }: ToolsPanelProps) {
     { id: "text", icon: <Type className="h-5 w-5" />, label: "Text" },
     { id: "line", icon: <Minus className="h-5 w-5" />, label: "Line" },
     { id: "arrow", icon: <ArrowRight className="h-5 w-5" />, label: "Arrow" },
-    { action: openFileDialog, icon: <Image className="h-5 w-5" />, label: "Image" },
+    { action: openFileDialog, icon: <Image className="h-5 w-5" aria-label="Upload image" />, label: "Image" },
   ];
 
   // Handle tool selection

@@ -4,6 +4,9 @@ import {
   DefaultColorStyle,
   DefaultFillStyle,
   DefaultDashStyle,
+  TLDefaultColorStyle,
+  TLDefaultFillStyle,
+  TLDefaultDashStyle,
 } from "tldraw";
 import { Button } from "@/components/ui/button";
 
@@ -11,9 +14,9 @@ export default function StylesPanel() {
   const editor = useEditor();
   
   // Style states to track current selections
-  const [currentColor, setCurrentColor] = useState<string>("black");
-  const [currentFill, setCurrentFill] = useState<string>("solid");
-  const [currentDash, setCurrentDash] = useState<string>("draw");
+  const [currentColor, setCurrentColor] = useState<TLDefaultColorStyle>("black");
+  const [currentFill, setCurrentFill] = useState<TLDefaultFillStyle>("solid");
+  const [currentDash, setCurrentDash] = useState<TLDefaultDashStyle>("draw");
 
   // Track current styles from the editor
   useEffect(() => {
@@ -43,7 +46,11 @@ export default function StylesPanel() {
   }, [editor]);
 
   // Apply style to both selected shapes and for future shapes
-  const applyStyle = (style: Record<string, any>) => {
+  const applyStyle = (style: {
+    color?: TLDefaultColorStyle;
+    fill?: TLDefaultFillStyle;
+    dash?: TLDefaultDashStyle;
+  }) => {
     if (!editor) return;
     
     // Set style for next shapes (to be created)
@@ -89,7 +96,7 @@ export default function StylesPanel() {
               key={fill}
               variant={currentFill === fill ? "default" : "outline"}
               className="h-8 capitalize"
-              onClick={() => applyStyle({ fill: fill as any })}
+              onClick={() => applyStyle({ fill: fill as TLDefaultFillStyle })}
             >
               {fill}
             </Button>
@@ -109,7 +116,7 @@ export default function StylesPanel() {
                 border: currentColor === color ? "2px solid white" : undefined,
                 boxShadow: currentColor === color ? "0 0 0 1px black" : undefined
               }}
-              onClick={() => applyStyle({ color })}
+              onClick={() => applyStyle({ color: color as TLDefaultColorStyle })}
             />
           ))}
         </div>
@@ -122,7 +129,7 @@ export default function StylesPanel() {
               key={dash}
               variant={currentDash === dash ? "default" : "outline"}
               className="h-8 capitalize"
-              onClick={() => applyStyle({ dash: dash as any })}
+              onClick={() => applyStyle({ dash: dash as TLDefaultDashStyle })}
             >
               {dash}
             </Button>

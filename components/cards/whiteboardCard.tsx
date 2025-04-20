@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { DeleteWhiteboardButton } from "../buttons/deleteWhiteboardButton";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, CardAction } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardFooter, CardAction } from "@/components/ui/card";
 
 interface WhiteboardCardProps {
   id: string;

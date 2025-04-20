@@ -70,18 +70,4 @@ export default function ImageUploader({ fileInputRef: externalRef, onUpload }: I
       onChange={handleFileUpload}
     />
   );
-}
-
-// Hook para manejar la selección de imagen
-export function useImageUploader() {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  const openFileDialog = () => {
-    fileInputRef.current?.click();
-  };
-  
-  return {
-    fileInputRef,
-    openFileDialog
-  };
 } 
