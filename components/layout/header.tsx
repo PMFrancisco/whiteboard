@@ -60,16 +60,16 @@ export function Header() {
               <NavigationMenuContent>
                 <ul className="grid w-[200px] gap-3 p-4">
                   <ListItem 
-                    href="/documentation" 
-                    title="Documentation"
+                    href="https://github.com/PMFrancisco/whiteboard" 
+                    title="Github Repository"
                   >
-                    Learn how to use the whiteboard tool
+                    Learn how to deploy the whiteboard tool
                   </ListItem>
                   <ListItem 
-                    href="/api" 
-                    title="API"
+                    href="https://www.linkedin.com/in/franciscopm/?locale=en_US" 
+                    title="LinkedIn Profile"
                   >
-                    Explore our API documentation
+                    Explore my LinkedIn Profile
                   </ListItem>
                 </ul>
               </NavigationMenuContent>
