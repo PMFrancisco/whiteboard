@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { trpc } from "@/utils/trpc";
 import { AssetRecordType, useEditor } from "tldraw";
+import { toast } from "sonner";
 
 export function useImageGeneration() {
   const [prompt, setPrompt] = useState("");
@@ -55,6 +56,9 @@ export function useImageGeneration() {
     onError: (error) => {
       setIsLoading(false);
       console.error("Error generating image:", error);
+      toast.error("Error generating image", {
+        description: "Please try again later",
+      });
     },
   });
 

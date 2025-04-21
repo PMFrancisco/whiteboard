@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { DeleteWhiteboardButton } from "../buttons/deleteWhiteboardButton";
+import { OpenWhiteboardButton } from "../buttons/openWhiteboardButton";
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter, CardAction } from "@/components/ui/card";
 
 interface WhiteboardCardProps {
@@ -7,7 +7,6 @@ interface WhiteboardCardProps {
 }
 
 export function WhiteboardCard({ id }: WhiteboardCardProps) {
-  
   return (
     <Card className="hover:border-blue-400 transition-colors">
       <CardHeader>
@@ -20,9 +19,7 @@ export function WhiteboardCard({ id }: WhiteboardCardProps) {
         </CardAction>
       </CardHeader>
       <CardFooter className="text-xs text-muted-foreground">
-        <Link href={`/whiteboard/${id}`} className="w-full text-blue-600 hover:underline">
-          Open Whiteboard
-        </Link>
+        <OpenWhiteboardButton id={id} />
       </CardFooter>
     </Card>
   );
