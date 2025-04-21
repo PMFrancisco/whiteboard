@@ -2,6 +2,28 @@
 
 This application is a whiteboard editor built using tldraw, Next.js, and tRPC for type-safe API implementation.
 
+## Known Issues
+
+### Deployment Limitations
+- The PostgreSQL database on Render's free tier may experience cold starts, meaning the first connection after a period of inactivity might take a few seconds to establish
+- The OpenAI API key used in production is on the free tier, which means the AI image generation feature will not work in the deployed version, but it will in a local built one
+
+## Deployment
+
+The application is deployed on:
+- **Frontend**: Vercel (https://whiteboard-vidext.vercel.app)
+- **Database**: PostgreSQL on Render
+
+To deploy your own instance:
+
+1. Fork this repository
+2. Create a new project on Vercel and connect it to your repository
+3. Set up a PostgreSQL database on Render
+4. Configure the following environment variables in Vercel:
+   - `DATABASE_URL`: Your Render PostgreSQL connection string
+   - `OPENAI_API_KEY`: Your OpenAI API key
+5. Deploy!
+
 ## Technologies Used
 
 - **Next.js**: App router for robust server-side rendering and API routes
