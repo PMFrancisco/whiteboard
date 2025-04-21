@@ -11,7 +11,7 @@ This application is a whiteboard editor built using tldraw, Next.js, and tRPC fo
 ## Deployment
 
 The application is deployed on:
-- **Frontend**: Vercel (https://whiteboard-vidext.vercel.app)
+- **Frontend**: Vercel ([https://whiteboard-indol-nine.vercel.app](https://whiteboard-indol-nine.vercel.app/))
 - **Database**: PostgreSQL on Render
 
 To deploy your own instance:
